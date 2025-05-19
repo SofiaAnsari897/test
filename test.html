@@ -1,0 +1,1249 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CryptoPro - Live Cryptocurrency Trading Dashboard</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Roboto:wght@400;500&display=swap');
+
+    /* Reset and base */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    html, body {
+      height: 100%;
+      font-family: 'Roboto', sans-serif;
+      background-color: #0a0e1a;
+      color: #cdd6f4;
+      overflow: hidden;
+      transition: background-color 0.4s ease, color 0.4s ease;
+    }
+    body.light {
+      background-color: #f3f4f6;
+      color: #1f2937;
+    }
+
+    /* Scrollbar style */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background-color: #7fffd4;
+      border-radius: 10px;
+    }
+    body.light ::-webkit-scrollbar-thumb {
+      background-color: #3b82f6;
+    }
+
+    #app {
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      grid-template-rows: 60px 1fr;
+      height: 100vh;
+      gap: 0;
+      overflow: hidden;
+    }
+
+    /* Sidebar */
+    aside.sidebar {
+      grid-column: 1 / 2;
+      grid-row: 1 / 3;
+      background: linear-gradient(180deg, #120f43, #1c135d);
+      padding-top: 1rem;
+      display: flex;
+      flex-direction: column;
+      user-select: none;
+      border-right: 1px solid #2c2f55;
+      transition: background 0.4s ease;
+    }
+    body.light aside.sidebar {
+      background: linear-gradient(180deg, #dbeafe, #bfdbfe);
+      border-right-color: #cbd5e1;
+    }
+
+    aside.sidebar h1 {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 700;
+      font-size: 1.8rem;
+      color: #7fffd4;
+      text-align: center;
+      margin-bottom: 2rem;
+      letter-spacing: 2px;
+      user-select: none;
+    }
+    body.light aside.sidebar h1 {
+      color: #2563eb;
+    }
+
+    nav.sidebar-nav {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      padding: 0 1rem;
+    }
+    nav.sidebar-nav a {
+      color: #7fffd4;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 1rem;
+      padding: 0.75rem 1rem;
+      border-radius: 10px;
+      display: block;
+      transition: background-color 0.3s ease, color 0.3s ease;
+      cursor: pointer;
+      user-select: none;
+    }
+    nav.sidebar-nav a:hover,
+    nav.sidebar-nav a.active {
+      background-color: #50fa7b;
+      color: #0a0e1a;
+      text-shadow: 0 0 4px #50fa7b;
+    }
+    body.light nav.sidebar-nav a {
+      color: #1e293b;
+    }
+    body.light nav.sidebar-nav a:hover,
+    body.light nav.sidebar-nav a.active {
+      background-color: #3b82f6;
+      color: #f3f4f6;
+      text-shadow: none;
+    }
+
+    /* Header */
+    header.header {
+      grid-column: 2 / 3;
+      grid-row: 1 / 2;
+      background: linear-gradient(90deg, #120f43, #1c135d);
+      border-bottom: 1px solid #2c2f55;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 2rem;
+      user-select: none;
+      transition: background-color 0.4s ease;
+      color: #7fffd4;
+    }
+    body.light header.header {
+      background: linear-gradient(90deg, #c7d2fe, #60a5fa);
+      color: #f3f4f6;
+      border-color: #bfdbfe;
+    }
+
+    /* Ticker inside header */
+    .ticker-wrap {
+      overflow: hidden;
+      white-space: nowrap;
+      flex-grow: 1;
+      margin-left: 2rem;
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: inherit;
+      user-select: none;
+      position: relative;
+    }
+    .ticker {
+      display: inline-block;
+      padding-left: 100%;
+      animation: ticker 20s linear infinite;
+    }
+    @keyframes ticker {
+      0% {transform: translateX(0);}
+      100% {transform: translateX(-100%);}
+    }
+    .ticker-item {
+      display: inline-block;
+      padding: 0 2rem;
+      border-right: 1px solid currentColor;
+      color: inherit;
+      user-select: none;
+      transition: color 0.4s ease;
+    }
+    .ticker-item:last-child {
+      border-right: none;
+    }
+    .ticker-item span.pair {
+      color: #bd93f9;
+      font-weight: 700;
+    }
+    body.light .ticker-item span.pair {
+      color: #2563eb;
+    }
+    .ticker-item span.price {
+      margin-left: 0.5rem;
+    }
+
+    /* Theme toggle button */
+    #themeToggle {
+      cursor: pointer;
+      background: transparent;
+      border: 2px solid #7fffd4;
+      color: #7fffd4;
+      padding: 0.35rem 0.8rem;
+      border-radius: 6px;
+      font-weight: 700;
+      user-select: none;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+    #themeToggle:hover {
+      background-color: #7fffd4;
+      color: #0a0e1a;
+    }
+    body.light #themeToggle {
+      border-color: #2563eb;
+      color: #2563eb;
+    }
+    body.light #themeToggle:hover {
+      background-color: #2563eb;
+      color: #e5e7eb;
+    }
+
+    /* Main content grid */
+    #content {
+      grid-column: 2 / 3;
+      grid-row: 2 / 3;
+      display: grid;
+      grid-template-columns: 2.5fr 1.5fr;
+      grid-template-rows: auto auto;
+      gap: 1.5rem 2rem;
+      padding: 2rem;
+      overflow: hidden;
+      height: calc(100vh - 60px - 4rem);
+      user-select: none;
+      color: inherit;
+    }
+    body.light #content {
+      color: #1f2937;
+    }
+
+    /* Left column: Chart and Order Book stacked vertically */
+    .left-column {
+      display: grid;
+      grid-template-rows: 2.5fr 1.8fr;
+      gap: 1.5rem;
+      overflow: hidden;
+    }
+
+    /* Chart section */
+    section.chart-section {
+      background-color: #12172a;
+      border-radius: 16px;
+      padding: 1.2rem 1.5rem 1.5rem 1.5rem;
+      box-shadow: 0 0 30px #5d53f4cc;
+      display: flex;
+      flex-direction: column;
+      user-select: none;
+      position: relative;
+      transition: background-color 0.4s ease;
+      overflow: hidden;
+    }
+    body.light section.chart-section {
+      background-color: #f9fafb;
+      box-shadow: 0 0 30px #2563eb88;
+    }
+    .chart-header {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 700;
+      font-size: 1.3rem;
+      color: #7fffd4;
+      margin-bottom: 0.8rem;
+      user-select: none;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    body.light .chart-header {
+      color: #2563eb;
+    }
+    /* Chart timeframe selector */
+    .timeframe-selector {
+      display: flex;
+      gap: 0.7rem;
+      user-select: none;
+    }
+    .timeframe-selector button {
+      background: transparent;
+      border: 1.5px solid #7fffd4;
+      color: #7fffd4;
+      font-weight: 600;
+      padding: 0.3rem 0.9rem;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.3s ease, color 0.3s ease;
+      user-select: none;
+    }
+    .timeframe-selector button.active, .timeframe-selector button:hover {
+      background-color: #7fffd4;
+      color: #0a0e1a;
+      box-shadow: 0 0 12px #7fffd4aa;
+    }
+    body.light .timeframe-selector button {
+      border-color: #2563eb;
+      color: #2563eb;
+    }
+    body.light .timeframe-selector button.active, body.light .timeframe-selector button:hover {
+      background-color: #2563eb;
+      color: #e5e7eb;
+      box-shadow: 0 0 12px #2563ebbb;
+    }
+
+    #candlestick-chart {
+      flex-grow: 1;
+      background: #171c33;
+      border-radius: 12px;
+      box-shadow: inset 0 0 30px #5d53f4cc;
+      user-select: none;
+      width: 100% !important;
+      height: 100% !important;
+    }
+    body.light #candlestick-chart {
+      background: #e0e7ff;
+      box-shadow: inset 0 0 30px #2563ebbb;
+    }
+
+    /* Order book */
+    section.order-book {
+      background-color: #12172a;
+      border-radius: 16px;
+      box-shadow: 0 0 26px #ff79c6cc;
+      color: #ff79c6;
+      padding: 1rem 1.3rem 1.3rem 1.3rem;
+      font-family: 'Roboto Mono', monospace;
+      font-size: 0.9rem;
+      user-select: none;
+      display: flex;
+      flex-direction: column;
+      transition: background-color 0.4s ease, color 0.4s ease;
+      overflow: hidden;
+    }
+    body.light section.order-book {
+      background-color: #f3f4f6;
+      color: #be185d;
+      box-shadow: 0 0 26px #be185dab;
+    }
+    section.order-book h3 {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 700;
+      margin-bottom: 0.8rem;
+      user-select: none;
+      text-align: center;
+    }
+    .book-content {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.8rem;
+      overflow-y: auto;
+      border-top: 1px solid currentColor;
+      padding: 0.5rem 0 0 0;
+      font-variant-numeric: tabular-nums;
+    }
+    .book-side {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      max-height: 330px;
+      overflow-y: auto;
+    }
+    .book-side h4 {
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 0.5rem;
+      text-transform: uppercase;
+      font-size: 1rem;
+      letter-spacing: 0.06em;
+      user-select: none;
+    }
+    .order-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.3rem 0.5rem;
+      border-radius: 10px;
+      transition: background-color 0.3s ease;
+      cursor: default;
+      font-weight: 700;
+    }
+    .order-item:hover {
+      background-color: rgba(255 121 198 / 0.15);
+    }
+    .order-item.buy {
+      color: #50fa7b;
+    }
+    .order-item.sell {
+      color: #ff5555;
+    }
+
+    /* Right column: Trade panel above History stacked vertically */
+    .right-column {
+      display: grid;
+      grid-template-rows: auto 1fr;
+      gap: 1.5rem;
+      overflow: hidden;
+    }
+
+    /* Trade panel */
+    section.trade-panel {
+      background-color: #12172a;
+      border-radius: 16px;
+      padding: 2rem 2rem 2.2rem 2rem;
+      box-shadow: 0 0 30px #f2a365bb;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      transition: background-color 0.4s ease;
+      overflow: visible;
+      user-select: none;
+    }
+    body.light section.trade-panel {
+      background-color: #f9fafb;
+      box-shadow: 0 0 30px #f9731677;
+      color: #1f2937;
+    }
+    section.trade-panel h2 {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 700;
+      color: #f2a365;
+      user-select: none;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 1.5rem;
+    }
+    body.light section.trade-panel h2 {
+      color: #f97316;
+    }
+    .wallet-balance {
+      font-weight: 600;
+      font-size: 1.05rem;
+      color: #50fa7b;
+      user-select: none;
+      white-space: nowrap;
+    }
+    body.light .wallet-balance {
+      color: #ea580c;
+    }
+
+    form.trade-form {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem 1.5rem;
+      align-items: center;
+    }
+    form.trade-form label {
+      font-weight: 700;
+      color: #50fa7b;
+      cursor: default;
+      user-select: none;
+    }
+    body.light form.trade-form label {
+      color: #d97706;
+    }
+    form.trade-form input,
+    form.trade-form select {
+      grid-column: 2 / 3;
+      background-color: #0f1321;
+      border: 2px solid #302f44;
+      border-radius: 12px;
+      color: #cbd5e1;
+      font-size: 1.1rem;
+      padding: 0.7rem 1rem;
+      transition: border-color 0.3s ease, background-color 0.4s ease, color 0.4s ease;
+      user-select: text;
+      width: 100%;
+    }
+    form.trade-form input::placeholder {
+      color: #94a3b8;
+    }
+    form.trade-form input:focus,
+    form.trade-form select:focus {
+      border-color: #f2a365;
+      outline: none;
+      background-color: #1b1f36;
+      color: #fff;
+    }
+    body.light form.trade-form input,
+    body.light form.trade-form select {
+      background-color: #fff;
+      border: 2px solid #d1d5db;
+      color: #1f2937;
+    }
+    body.light form.trade-form input:focus,
+    body.light form.trade-form select:focus {
+      border-color: #f97316;
+      background-color: #fff7ed;
+      color: #78350f;
+    }
+
+    /* Label spans for grid alignment */
+    form.trade-form label:nth-child(odd) {
+      grid-column: 1 / 2;
+      text-align: right;
+      padding-right: 0.5rem;
+    }
+    form.trade-form input:nth-child(even),
+    form.trade-form select:nth-child(even) {
+      grid-column: 2 / 3;
+    }
+
+    /* Trade buttons group */
+    .trade-buttons {
+      grid-column: 1 / 3;
+      display: flex;
+      gap: 1rem;
+      margin-top: 0.5rem;
+    }
+    button {
+      flex: 1;
+      font-weight: 700;
+      border: none;
+      border-radius: 14px;
+      cursor: pointer;
+      padding: 0.85rem 0;
+      font-size: 1.15rem;
+      transition: box-shadow 0.3s ease, transform 0.15s ease;
+      user-select: none;
+      user-drag: none;
+    }
+    button:active {
+      transform: scale(0.96);
+    }
+    button.buy-btn {
+      background: linear-gradient(45deg, #50fa7b, #24ffb5);
+      color: #0a0e1a;
+      box-shadow: 0 0 10px #50fa7b, inset 0 0 6px #32db89;
+      border: 2px solid #32db89;
+    }
+    button.buy-btn:hover {
+      box-shadow: 0 0 28px #50fa7b, inset 0 0 10px #32db89;
+    }
+    button.sell-btn {
+      background: linear-gradient(45deg, #ff5555, #ff1e1e);
+      color: #f8f8f2;
+      box-shadow: 0 0 10px #ff4444, inset 0 0 6px #ff1e1e;
+      border: 2px solid #ff1e1e;
+    }
+    button.sell-btn:hover {
+      box-shadow: 0 0 28px #ff4444, inset 0 0 10px #ff1e1e;
+    }
+    button.market-btn {
+      background: linear-gradient(45deg, #6272a4, #44475a);
+      color: #cbd5e1;
+      box-shadow: 0 0 10px #6272a4, inset 0 0 6px #44475a;
+      border: 2px solid #44475a;
+    }
+    button.market-btn:hover {
+      box-shadow: 0 0 28px #6272a4, inset 0 0 10px #44475a;
+    }
+
+    /* Trade help text */
+    #tradeHelp {
+      grid-column: 1 / 3;
+      font-size: 0.85rem;
+      color: #94a3b8;
+      margin-top: 0.35rem;
+      user-select: none;
+      text-align: center;
+    }
+    body.light #tradeHelp {
+      color: #cbd5e1;
+    }
+
+    /* History panel */
+    section.history-panel {
+      background-color: #12172a;
+      border-radius: 16px;
+      padding: 1.6rem 1.8rem;
+      box-shadow: 0 0 25px #8be9fdcc;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      user-select: none;
+      transition: background-color 0.4s ease;
+      font-size: 0.9rem;
+    }
+    body.light section.history-panel {
+      background-color: #f9fafb;
+      box-shadow: 0 0 25px #2563eb88;
+      color: #1f2937;
+    }
+    section.history-panel h3 {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 700;
+      color: #8be9fd;
+      margin-bottom: 1rem;
+      user-select: none;
+      text-align: center;
+      font-size: 1.3rem;
+    }
+    body.light section.history-panel h3 {
+      color: #2563eb;
+    }
+    .history-list {
+      overflow-y: auto;
+      flex-grow: 1;
+      scrollbar-width: thin;
+      scrollbar-color: #7fffd4 transparent;
+      user-select: text;
+    }
+    .history-list::-webkit-scrollbar {
+      width: 8px;
+    }
+    .history-list::-webkit-scrollbar-thumb {
+      background-color: #7fffd4;
+      border-radius: 12px;
+    }
+    .history-item {
+      padding: 0.45rem 0.5rem;
+      border-bottom: 1px solid #2c2f55;
+      display: grid;
+      grid-template-columns: 1.3fr 0.8fr 1.35fr 1.35fr 1.3fr;
+      font-weight: 600;
+      gap: 0.3rem;
+      user-select: none;
+    }
+    body.light .history-item {
+      border-color: #cbd5e1;
+    }
+    .history-item span {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      user-select: none;
+    }
+    .history-item .type-buy {
+      color: #50fa7b;
+    }
+    .history-item .type-sell {
+      color: #ff5555;
+    }
+
+    /* Tooltips */
+    [title] {
+      position: relative;
+    }
+    [title]:hover::after {
+      content: attr(title);
+      position: absolute;
+      top: -1.8em;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.75);
+      color: #fff;
+      font-size: 0.75rem;
+      padding: 0.25em 0.5em;
+      border-radius: 4px;
+      white-space: nowrap;
+      pointer-events: none;
+      user-select: none;
+      opacity: 1;
+      transition: opacity 0.2s ease-in-out;
+      z-index: 1000;
+    }
+    [title]::after {
+      opacity: 0;
+    }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      #app {
+        grid-template-columns: 1fr;
+        grid-template-rows: 60px 250px 1fr 280px;
+      }
+      aside.sidebar {
+        grid-column: 1 / 2;
+        grid-row: 1 / 2;
+        flex-direction: row;
+        padding: 0 1rem;
+        border-right: none;
+        border-bottom: 1px solid #2c2f55;
+        overflow-x: auto;
+        overscroll-behavior-x: contain;
+      }
+      body.light aside.sidebar {
+        border-color: #bfdbfe;
+      }
+      aside.sidebar h1 {
+        font-size: 1.4rem;
+        margin-bottom: 0;
+        flex-shrink: 0;
+        padding-right: 1rem;
+        line-height: 60px;
+      }
+      nav.sidebar-nav {
+        flex-direction: row;
+        gap: 1rem;
+        padding: 0;
+      }
+      nav.sidebar-nav a {
+        padding: 0.5rem 0.8rem;
+        font-size: 0.9rem;
+      }
+      #themeToggle {
+        display: none;
+      }
+      header.header {
+        grid-column: 1 / 2;
+        grid-row: 2 / 3;
+        padding: 0 1rem;
+      }
+      .ticker-wrap {
+        margin-left: 0;
+      }
+      #content {
+        grid-column: 1 / 2;
+        grid-row: 3 / 4;
+        padding: 1rem;
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto;
+        gap: 1rem;
+        height: auto;
+        overflow-y: visible;
+      }
+      .left-column {
+        grid-template-rows: 1fr 200px;
+        height: auto;
+      }
+      section.order-book {
+        max-height: 200px;
+      }
+      .right-column {
+        grid-template-rows: 360px 220px;
+      }
+      section.history-panel {
+        grid-row: 4 / 5;
+        grid-column: 1 / 2;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="app" role="application" aria-label="CryptoPro trading dashboard">
+    <aside class="sidebar" role="complementary" aria-label="Main sidebar navigation">
+      <h1>CryptoPro</h1>
+      <nav class="sidebar-nav" role="navigation" aria-label="Primary navigation menu">
+        <a href="#" class="active" tabindex="0">Markets</a>
+        <a href="#" tabindex="0">Trade</a>
+        <a href="#" tabindex="0">Wallet</a>
+        <a href="#" tabindex="0">Portfolio</a>
+        <a href="#" tabindex="0">News</a>
+        <a href="#" tabindex="0">Analytics</a>
+        <a href="#" tabindex="0">Settings</a>
+      </nav>
+    </aside>
+    <header class="header" role="banner">
+      <div style="font-weight:700; font-family:'Orbitron',sans-serif; font-size:1.4rem;">
+        BTC / USD
+      </div>
+      <div class="ticker-wrap" aria-label="Live crypto prices ticker">
+        <div class="ticker" id="ticker"></div>
+      </div>
+      <button id="themeToggle" aria-label="Toggle light or dark theme" title="Toggle light/dark theme">Dark Mode</button>
+    </header>
+    <main id="content" role="main">
+      <div class="left-column">
+        <section class="chart-section" aria-label="Candlestick chart and price graph">
+          <div class="chart-header">
+            BTC / USD 24h Chart
+            <div class="timeframe-selector" role="group" aria-label="Select chart timeframe">
+              <button class="timeframe-btn active" data-timeframe="1h" aria-pressed="true">1h</button>
+              <button class="timeframe-btn" data-timeframe="4h" aria-pressed="false">4h</button>
+              <button class="timeframe-btn" data-timeframe="1d" aria-pressed="false">1d</button>
+            </div>
+          </div>
+          <canvas id="candlestick-chart" aria-label="Candlestick price chart" role="img" width="100%" height="100%"></canvas>
+        </section>
+        <section class="order-book" aria-label="Order book showing bids and asks">
+          <h3>Order Book</h3>
+          <div class="book-content" aria-live="polite" aria-relevant="additions" aria-atomic="true" tabindex="0">
+            <div class="book-side bids" aria-label="Buy orders">
+              <h4>Bids</h4>
+              <!-- dynamic bid list -->
+            </div>
+            <div class="book-side asks" aria-label="Sell orders">
+              <h4>Asks</h4>
+              <!-- dynamic ask list -->
+            </div>
+          </div>
+        </section>
+      </div>
+      <div class="right-column">
+        <section class="trade-panel" aria-label="Crypto trading panel">
+          <h2>
+            Trade BTC/USD
+            <span class="wallet-balance" aria-live="polite" aria-atomic="true" aria-label="Current wallet balance">Balance: 2.35 BTC</span>
+          </h2>
+          <form class="trade-form" id="tradeForm" aria-describedby="tradeHelp" novalidate>
+            <label for="pairSelect" title="Select cryptocurrency pair">Trading Pair</label>
+            <select id="pairSelect" name="pair" required>
+              <option value="bitcoin" selected>BTC / USD</option>
+              <option value="ethereum">ETH / USD</option>
+              <option value="solana">SOL / USD</option>
+              <option value="binancecoin">BNB / USD</option>
+              <option value="ripple">XRP / USD</option>
+            </select>
+
+            <label for="orderType" title="Select order type">Order Type</label>
+            <select id="orderType" name="orderType" required>
+              <option value="limit" selected>Limit</option>
+              <option value="market">Market</option>
+              <option value="stop-limit">Stop-Limit</option>
+            </select>
+
+            <label for="leverage" title="Select leverage multiplier">Leverage</label>
+            <select id="leverage" name="leverage" required>
+              <option value="1" selected>1x</option>
+              <option value="2">2x</option>
+              <option value="5">5x</option>
+              <option value="10">10x</option>
+            </select>
+
+            <label for="amount" title="Enter the amount in crypto units">Amount</label>
+            <input
+              type="number"
+              id="amount"
+              name="amount"
+              placeholder="e.g. 0.01"
+              min="0.0001"
+              step="0.0001"
+              autocomplete="off"
+              required
+              aria-required="true"
+            />
+
+            <label for="price" title="Enter the price per unit in USD" id="priceLabel">Price (USD)</label>
+            <input
+              type="number"
+              id="price"
+              name="price"
+              placeholder="e.g. 25000"
+              min="0.01"
+              step="0.01"
+              autocomplete="off"
+              required
+              aria-required="true"
+            />
+
+            <div class="trade-buttons" role="group" aria-label="Trade actions">
+              <button type="button" class="buy-btn" id="buyLimitBtn" title="Place limit buy order">Buy Limit</button>
+              <button type="button" class="sell-btn" id="sellLimitBtn" title="Place limit sell order">Sell Limit</button>
+            </div>
+            <div class="trade-buttons" role="group" aria-label="Market trade actions" style="margin-top: 0.4rem;">
+              <button type="button" class="buy-btn market-btn" id="buyMarketBtn" title="Place market buy order">Buy Market</button>
+              <button type="button" class="sell-btn market-btn" id="sellMarketBtn" title="Place market sell order">Sell Market</button>
+            </div>
+
+            <p id="tradeHelp" style="font-size:0.8em; color:#94a3b8; margin-top: 0.6rem; grid-column: 1 / -1; text-align:center;">
+              Fill the fields and place your trade.
+            </p>
+          </form>
+        </section>
+        <section class="history-panel" aria-label="Recent trade history">
+          <h3>Recent Trades</h3>
+          <div class="history-list" id="historyList" tabindex="0" aria-live="polite" aria-relevant="additions">
+            <!-- History items generated by JS -->
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/lightweight-charts@3.8.0/dist/lightweight-charts.standalone.production.js"></script>
+  <script>
+    //////////////////////////////////////////////////
+    // THEME TOGGLE
+    //////////////////////////////////////////////////
+    const themeToggleBtn = document.getElementById('themeToggle');
+    function setTheme(isDark) {
+      if (isDark) {
+        document.body.classList.remove('light');
+        themeToggleBtn.textContent = 'Light Mode';
+        themeToggleBtn.setAttribute('aria-label', 'Switch to light mode');
+      } else {
+        document.body.classList.add('light');
+        themeToggleBtn.textContent = 'Dark Mode';
+        themeToggleBtn.setAttribute('aria-label', 'Switch to dark mode');
+      }
+    }
+    // Start in dark mode
+    setTheme(true);
+
+    themeToggleBtn.addEventListener('click', () => {
+      const isDark = document.body.classList.contains('light');
+      setTheme(isDark);
+    });
+
+    //////////////////////////////////////////////////
+    // GLOBAL VARIABLES
+    //////////////////////////////////////////////////
+    const ticker = document.getElementById('ticker');
+    const pairSelect = document.getElementById('pairSelect');
+    const orderTypeSelect = document.getElementById('orderType');
+    const priceInput = document.getElementById('price');
+    const priceLabel = document.getElementById('priceLabel');
+    const amountInput = document.getElementById('amount');
+    const leverageSelect = document.getElementById('leverage');
+    const historyList = document.getElementById('historyList');
+    const walletBalanceEl = document.querySelector('.wallet-balance');
+    const chartContainer = document.getElementById('candlestick-chart');
+    let walletBalanceBTC = 2.35;
+    let currentCoinId = pairSelect.value; // CoinGecko coin ids like 'bitcoin', 'ethereum'
+    let currentPairSymbol = 'BTC/USD';
+
+    //////////////////////////////////////////////////
+    // COINGECKO API UTILITIES
+    //////////////////////////////////////////////////
+    const COINGECKO_API_BASE = 'https://api.coingecko.com/api/v3';
+
+    // Format large numbers with decimals and suffixes
+    function formatNumber(num) {
+      if(num >= 1_000_000_000) return (num / 1_000_000_000).toFixed(2) + 'B';
+      if(num >= 1_000_000) return (num / 1_000_000).toFixed(2) + 'M';
+      if(num >= 1_000) return (num / 1_000).toFixed(2) + 'K';
+      return num.toFixed(2);
+    }
+
+    //////////////////////////////////////////////////
+    // FETCH LIVE PRICES FOR TICKER
+    //////////////////////////////////////////////////
+    async function fetchTickerPrices(){
+      try {
+        // Fetch simple price for top coins for ticker
+        const coinsToLoad = ['bitcoin','ethereum','solana','binancecoin','ripple','litecoin','cardano','dogecoin'];
+        const url = `${COINGECKO_API_BASE}/simple/price?ids=${coinsToLoad.join(',')}&vs_currencies=usd&include_24hr_change=true`;
+        const res = await fetch(url);
+        const data = await res.json();
+
+        // Update global tickerData object for prices and changes
+        tickerData = coinsToLoad.map(id => {
+          const coin = data[id];
+          return {
+            pair: id.toUpperCase().replace('BITCOIN', 'BTC').replace('ETHEREUM', 'ETH').replace('BINANCECOIN', 'BNB').replace('SOLANA', 'SOL').replace('RIPPLE', 'XRP').replace('LITECOIN', 'LTC').replace('CARDANO', 'ADA').replace('DOGECOIN', 'DOGE'),
+            price: coin.usd,
+            change24h: coin.usd_24h_change
+          };
+        });
+      } catch (e) {
+        // Fail silently, keep old prices
+        // console.error('Error fetching ticker prices:', e);
+      }
+    }
+
+    //////////////////////////////////////////////////
+    // RENDERING TICKER
+    //////////////////////////////////////////////////
+
+    let tickerData = [];
+
+    function animatePriceChange(el, isUp) {
+      el.style.transition = 'color 0.75s ease';
+      el.style.color = isUp ? '#50fa7b' : '#ff5555';
+      setTimeout(() => {
+        el.style.color = '';
+      }, 1500);
+    }
+
+    function renderTicker() {
+      ticker.innerHTML = '';
+      for(let i=0; i<2; i++){ // double scroll
+        tickerData.forEach(({pair, price, change24h}) => {
+          const item = document.createElement('div');
+          item.className = 'ticker-item';
+          const changeArrow = change24h >= 0 ? '▲' : '▼';
+          const changeColor = change24h >= 0 ? '#50fa7b' : '#ff5555';
+          const formattedChange = change24h ? change24h.toFixed(2) : '0.00';
+          item.innerHTML = `
+            <span class="pair">${pair}</span>
+            <span class="price ticker-price" data-pair="${pair}">$${price.toFixed(2)}</span>
+            <span style="color:${changeColor}; font-weight:700; margin-left:0.4rem;">${changeArrow} ${Math.abs(formattedChange)}%</span>
+          `;
+          ticker.appendChild(item);
+        });
+      }
+    }
+
+    //////////////////////////////////////////////////
+    // LIGHTWEIGHT CHARTS SETUP WITH LIVE DATA
+    //////////////////////////////////////////////////
+    const chart = LightweightCharts.createChart(chartContainer, {
+      width: chartContainer.clientWidth,
+      height: chartContainer.clientHeight,
+      layout: {
+        backgroundColor: getComputedStyle(document.body).backgroundColor,
+        textColor: getComputedStyle(document.body).color,
+        fontFamily: "'Roboto', sans-serif",
+      },
+      grid: {
+        vertLines: {
+          color: '#2c2f55'
+        },
+        horzLines: {
+          color: '#2c2f55'
+        },
+      },
+      crosshair: {
+        mode: LightweightCharts.CrosshairMode.Normal,
+      },
+      rightPriceScale: {
+        borderColor: '#2c2f55',
+      },
+      timeScale: {
+        borderColor: '#2c2f55',
+        timeVisible: true,
+        secondsVisible: false,
+      },
+    });
+
+    const candleSeries = chart.addCandlestickSeries({
+      upColor: '#50fa7b',
+      downColor: '#ff5555',
+      borderVisible: false,
+      wickUpColor: '#50fa7b',
+      wickDownColor: '#ff5555'
+    });
+
+    // Fetch candle (OHLC) data from CoinGecko market chart endpoint
+    async function fetchCandlestickData(coinId, days=1, interval='hourly'){
+      try {
+        const url = `${COINGECKO_API_BASE}/coins/${coinId}/ohlc?vs_currency=usd&days=${days}`;
+        const res = await fetch(url);
+        const data = await res.json();
+        if(!Array.isArray(data)) return [];
+
+        // data format: [timestamp, open, high, low, close]
+        const candles = data.map(item => ({
+          time: Math.floor(item[0] / 1000),
+          open: parseFloat(item[1]),
+          high: parseFloat(item[2]),
+          low: parseFloat(item[3]),
+          close: parseFloat(item[4])
+        }));
+        return candles;
+      } catch(e){
+        // On failure, fallback to empty array and silent
+        // console.error('Error fetching candle data:', e);
+        return [];
+      }
+    }
+
+    async function updateChart(coinId){
+      const candles = await fetchCandlestickData(coinId, 1);
+      if(candles.length > 0){
+        candleSeries.setData(candles);
+      }
+    }
+
+    //////////////////////////////////////////////////
+    // MOCK ORDERBOOK FROM LATEST PRICES
+    //////////////////////////////////////////////////
+    const orderBook = {
+      bids: [],
+      asks: [],
+    };
+
+    function generateOrders(side, count, basePrice) {
+      const orders = [];
+      for (let i = 0; i < count; i++) {
+        const price =
+          side === 'bid'
+            ? basePrice - Math.random() * 50
+            : basePrice + Math.random() * 50;
+        const amount = Math.random() * 5 + 0.1;
+        orders.push({ price: parseFloat(price.toFixed(2)), amount: parseFloat(amount.toFixed(4)) });
+      }
+      // Sort bids descending, asks ascending
+      if (side === 'bid') {
+        return orders.sort((a, b) => b.price - a.price);
+      } else {
+        return orders.sort((a, b) => a.price - b.price);
+      }
+    }
+
+    function renderOrderBook() {
+      const bidsContainer = document.querySelector('.book-side.bids');
+      const asksContainer = document.querySelector('.book-side.asks');
+      bidsContainer.querySelectorAll('.order-item').forEach(el => el.remove());
+      asksContainer.querySelectorAll('.order-item').forEach(el => el.remove());
+
+      orderBook.bids.forEach(order => {
+        const div = document.createElement('div');
+        div.classList.add('order-item', 'buy');
+        div.textContent = `${order.amount.toFixed(4)} @ $${order.price.toFixed(2)}`;
+        div.title = `Bid: ${order.amount.toFixed(4)} BTC at $${order.price.toFixed(2)}`;
+        bidsContainer.appendChild(div);
+      });
+      orderBook.asks.forEach(order => {
+        const div = document.createElement('div');
+        div.classList.add('order-item', 'sell');
+        div.textContent = `${order.amount.toFixed(4)} @ $${order.price.toFixed(2)}`;
+        div.title = `Ask: ${order.amount.toFixed(4)} BTC at $${order.price.toFixed(2)}`;
+        asksContainer.appendChild(div);
+      });
+    }
+
+    function updateOrderBook() {
+      const coinTicker = tickerData.find(t => t.pair === currentPairSymbol);
+      const basePrice = coinTicker ? coinTicker.price : 25000;
+      orderBook.bids = generateOrders('bid', 15, basePrice);
+      orderBook.asks = generateOrders('ask', 15, basePrice);
+      renderOrderBook();
+    }
+
+    //////////////////////////////////////////////////
+    // LIVE UPDATES
+    //////////////////////////////////////////////////
+    async function refreshData(){
+      await fetchTickerPrices();
+      renderTicker();
+
+      // Update chart if selected coin changed
+      await updateChart(currentCoinId);
+      updateOrderBook();
+      updateCurrentPairDisplay();
+    }
+
+    //////////////////////////////////////////////////
+    // UI INTERACTION AND TRADING LOGIC
+    //////////////////////////////////////////////////
+
+    function updateCurrentPairDisplay(){
+      // Update pair display in header & chart header
+      const symbolMapping = {
+        'bitcoin':'BTC/USD',
+        'ethereum':'ETH/USD',
+        'solana':'SOL/USD',
+        'binancecoin':'BNB/USD',
+        'ripple':'XRP/USD',
+      };
+      currentPairSymbol = symbolMapping[currentCoinId] || 'BTC/USD';
+
+      document.querySelector('header.header > div:first-child').textContent = currentPairSymbol;
+
+      const chartHeaderFirstChild = document.querySelector('.chart-header').childNodes[0];
+      if(chartHeaderFirstChild) {
+        chartHeaderFirstChild.textContent = currentPairSymbol + ' 24h Chart';
+      }
+
+      document.querySelector('section.trade-panel h2').childNodes[0].nodeValue = 'Trade ' + currentPairSymbol;
+    }
+
+    // Disable/enable price input based on order type
+    function updatePriceInput() {
+      if (orderTypeSelect.value === 'market') {
+        priceInput.disabled = true;
+        priceLabel.style.color = '#6b7280';  // Dim label
+        priceInput.placeholder = 'Market Price';
+        priceInput.value = '';
+        priceInput.removeAttribute('required');
+      } else {
+        priceInput.disabled = false;
+        priceLabel.style.color = '';
+        priceInput.placeholder = 'e.g. 25000';
+        priceInput.setAttribute('required', 'true');
+      }
+    }
+
+    orderTypeSelect.addEventListener('change', updatePriceInput);
+    updatePriceInput();
+
+    pairSelect.addEventListener('change', async () => {
+      currentCoinId = pairSelect.value;
+      updateCurrentPairDisplay();
+      await updateChart(currentCoinId);
+      updateOrderBook();
+    });
+
+    const buyLimitBtn = document.getElementById('buyLimitBtn');
+    const sellLimitBtn = document.getElementById('sellLimitBtn');
+    const buyMarketBtn = document.getElementById('buyMarketBtn');
+    const sellMarketBtn = document.getElementById('sellMarketBtn');
+
+    function createHistoryItem(pair, type, amount, price, leverage, orderType) {
+      const div = document.createElement('div');
+      div.className = 'history-item';
+      div.innerHTML = `
+        <span>${new Date().toLocaleTimeString()}</span>
+        <span class="${type === 'buy' ? 'type-buy' : 'type-sell'}">${type.toUpperCase()}</span>
+        <span>${amount} ${pair.split('/')[0]}</span>
+        <span>@ $${price}</span>
+        <span>${orderType}, ${leverage}x</span>
+      `;
+      return div;
+    }
+
+    function addHistoryEntry(pair, type, amount, price, leverage, orderType) {
+      const newEntry = createHistoryItem(pair, type, amount, price, leverage, orderType);
+      historyList.prepend(newEntry);
+    }
+
+    function handleTrade(type, marketOrder = false) {
+      let amount = parseFloat(amountInput.value);
+      let price = parseFloat(priceInput.value);
+      const orderTypeVal = marketOrder ? 'market' : orderTypeSelect.value;
+      const leverage = leverageSelect.value;
+      const pair = currentPairSymbol;
+
+      if (isNaN(amount) || amount <= 0) {
+        alert('Please enter a valid amount.');
+        amountInput.focus();
+        return;
+      }
+      if (!marketOrder && (isNaN(price) || price <= 0)) {
+        alert('Please enter a valid price.');
+        priceInput.focus();
+        return;
+      }
+      if(marketOrder) {
+        price = orderTypeVal === 'market' && type === 'buy'
+          ? orderBook.asks.length ? orderBook.asks[0].price : tickerData.find(d=>d.pair===pair).price
+          : orderBook.bids.length ? orderBook.bids[0].price : tickerData.find(d=>d.pair===pair).price;
+      }
+
+      amount = amount.toFixed(4);
+      price = price.toFixed(2);
+
+      if(type === 'buy'){
+        if(amount > walletBalanceBTC){
+          alert(`Insufficient balance: You have ${walletBalanceBTC.toFixed(4)} BTC`);
+          return;
+        }
+        walletBalanceBTC -= amount;
+      } else {
+        walletBalanceBTC += amount;
+      }
+      walletBalanceEl.textContent = `Balance: ${walletBalanceBTC.toFixed(4)} BTC`;
+
+      addHistoryEntry(pair, type, amount, price, leverage, orderTypeVal);
+
+      amountInput.value = '';
+      if(!marketOrder) priceInput.value = '';
+    }
+
+    buyLimitBtn.addEventListener('click', () => handleTrade('buy', false));
+    sellLimitBtn.addEventListener('click', () => handleTrade('sell', false));
+    buyMarketBtn.addEventListener('click', () => handleTrade('buy', true));
+    sellMarketBtn.addEventListener('click', () => handleTrade('sell', true));
+
+    //////////////////////////////////////////////////
+    // INITIAL SETUP & PERIODIC REFRESH
+    //////////////////////////////////////////////////
+
+    // Initial full refresh and then every 30 seconds
+    async function periodicRefresh(){
+      await refreshData();
+      setTimeout(periodicRefresh, 30000);
+    }
+
+    periodicRefresh();
+
+    // Resize chart on window resize
+    window.addEventListener('resize', () => {
+      chart.applyOptions({ width: chartContainer.clientWidth, height: chartContainer.clientHeight });
+    });
+  </script>
+</body>
+</html>
+
+```
